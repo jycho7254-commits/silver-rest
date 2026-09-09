@@ -14,7 +14,9 @@ create table if not exists dungji_board (
   pw_hash text,
   warm int default 0,
   cheer int default 0,
-  admin_reply text
+  admin_reply text,
+  admin_reply_secret boolean default false,
+  owner_key text
 );
 
 -- 2) 신청곡
@@ -94,8 +96,8 @@ drop view if exists dungji_board_public;
 create view dungji_board_public as
   select id, created_at, nick, title,
          case when secret then null else text end as text,
-         secret, (pw_hash is not null) as has_pw,
-         warm, cheer, admin_reply
+         secret, (pw_hash is not null) as has_pw, owner_key,
+         warm, cheer, admin_reply, admin_reply_secret
   from dungji_board;
 grant select on dungji_board_public to anon, authenticated;
 
