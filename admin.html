@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>둥지 운영툴</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--sage:#d98e6b;--sage-dark:#b96f4e;--cream:#fdf8f0;--cream2:#f9efe2;--ink:#43372e;--sub:#7d6f60;--coral:#e07856;--red:#c05a40}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Malgun Gothic',sans-serif;background:var(--cream);color:var(--ink);padding:20px;max-width:1000px;margin:0 auto}
+h1{font-size:22px;color:var(--sage-dark);margin-bottom:6px}
+.sub{font-size:13px;color:var(--sub);margin-bottom:20px}
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tabs button{padding:10px 16px;border:1.5px solid #e8dcc8;background:#fff;border-radius:10px;cursor:pointer;font-size:14px}
+.tabs button.on{background:var(--sage);color:#fff;border-color:var(--sage);font-weight:bold}
+.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 3px 16px rgba(180,120,80,.1);margin-bottom:14px}
+.card .meta{font-size:12.5px;color:#9a8f80;margin-bottom:6px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.card .body{font-size:14.5px;line-height:1.7;white-space:pre-wrap}
+.btn-del{margin-top:10px;border:1.5px solid #e8b8a8;background:#fdf0ea;color:var(--red);border-radius:9px;padding:7px 16px;font-size:13px;cursor:pointer}
+.btn-del:hover{background:#fae0d5}
+.risk{background:#fae8e4;border:1.5px solid var(--coral)}
+.login{max-width:360px;margin:80px auto;text-align:center}
+.login input{width:100%;padding:13px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:15px;margin:14px 0;text-align:center;background:#fff}
+.login button{width:100%;padding:13px;background:var(--sage);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer}
+.stat{display:inline-block;background:var(--cream2);border-radius:10px;padding:12px 18px;margin:4px;text-align:center;min-width:110px}
+.stat b{display:block;font-size:24px;color:var(--sage-dark)}
+.stat span{font-size:12px;color:var(--sub)}
+.empty{text-align:center;color:#9a8f80;padding:30px;font-size:14px}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:#f9efe2;color:var(--sage-dark);font-weight:bold;margin-left:6px}
+.badge.risk{background:#fae8e4;color:var(--red)}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div style="font-size:34px">🧡</div>
+  <h1>둥지 운영툴</h1>
+  <p class="sub">관리자 전용</p>
+  <input id="pw" type="password" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()">
+  <button onclick="doLogin()">입장</button>
+  <p id="login-err" style="color:var(--red);font-size:13px;margin-top:10px"></p>
+</div>
+
+<div id="app" style="display:none">
+  <h1>🧡 둥지 운영툴</h1>
+  <p class="sub">게시글 · 상담신청 · 마음체크 관리</p>
+  <div class="tabs">
+    <button class="on" data-tab="board" onclick="showTab('board')">📋 게시판</button>
+    <button data-tab="counsel" onclick="showTab('counsel')">📨 상담 신청</button>
+    <button data-tab="checks" onclick="showTab('checks')">📊 마음체크</button>
+    <button data-tab="music" onclick="showTab('music')">🎵 음악 관리</button>
+  </div>
+
+  <div id="tab-board">
+    <div id="board-stats"></div>
+    <div id="board-list"></div>
+  </div>
+  <div id="tab-counsel" style="display:none">
+    <div id="counsel-stats"></div>
+    <div id="counsel-list"></div>
+  </div>
+  <div id="tab-checks" style="display:none">
+    <div id="checks-stats"></div>
+    <div id="checks-list"></div>
+  </div>
+  <div id="tab-music" style="display:none">
+    <h3 style="margin-bottom:10px;font-size:16px">🎧 플레이리스트 편성 (카테고리별)</h3>
+    <div class="card" style="display:flex;gap:8px;flex-wrap:wrap">
+      <input id="pl-title" placeholder="곡 제목" style="flex:1;min-width:140px;padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:14px">
+      <select id="pl-cat" style="padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:14px">
+        <option value="위로가 되는 노래">위로가 되는 노래</option>
+        <option value="따뜻한 발라드">따뜻한 발라드</option>
+        <option value="잔잔한 피아노">잔잔한 피아노</option>
+        <option value="힐링 팝">힐링 팝</option>
+        <option value="명상 음악">명상 음악</option>
+      </select>
+      <input id="pl-search" placeholder="유튜브뮤직 검색어 (선택)" style="flex:1;min-width:140px;padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:14px">
+      <button onclick="addPlaylist()" style="padding:10px 18px;background:var(--sage);color:#fff;border:none;border-radius:9px;font-size:14px;cursor:pointer;font-weight:bold">추가</button>
+    </div>
+    <p style="font-size:12px;color:#9a8f80;margin-top:6px">* 검색어를 비우면 제목으로 유튜브뮤직에서 검색됩니다. 곡 제목을 클릭하면 유튜브뮤직에서 미리 들어볼 수 있어요.</p>
+    <div id="pl-list" style="margin-top:14px"></div>
+    <h3 style="margin:22px 0 10px;font-size:16px">🎶 방문자 신청곡</h3>
+    <div id="song-list"></div>
+  </div>
+</div>
+
+<script>
+const DB_URL = 'https://puuiviiiltxagoebruuq.supabase.co';
+const DB_KEY = 'sb_publishable_qsHOcy9rnJxhR1jpcRcVFA_7WNMfzWI';
+const H = {'apikey': DB_KEY, 'Authorization': 'Bearer ' + DB_KEY};
+let ADMIN_PW = '';
+
+function doLogin(){
+  const pw = document.getElementById('pw').value;
+  // 검증: admin_delete RPC에 틀린 pw → false 반환. 테스트 delete(존재안하는 id)로 검증
+  fetch(DB_URL + '/rest/v1/rpc/admin_delete_post', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({post_id: -1, pw: pw})
+  }).then(r => r.json()).then(ok => {
+    if(ok === true){
+      ADMIN_PW = pw;
+      sessionStorage.setItem('admin', pw);
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadAll();
+    } else {
+      document.getElementById('login-err').textContent = '비밀번호가 올바르지 않아요';
+    }
+  });
+}
+if(sessionStorage.getItem('admin')){
+  ADMIN_PW = sessionStorage.getItem('admin');
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadAll();
+}
+
+function showTab(t){
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('on'));
+  document.querySelector(`[data-tab="${t}"]`).classList.add('on');
+  ['board','counsel','checks','music'].forEach(x => document.getElementById('tab-'+x).style.display = x===t?'block':'none');
+}
+
+async function api(path){
+  const r = await fetch(DB_URL + '/rest/v1/' + path, {headers: H});
+  return r.ok ? r.json() : [];
+}
+
+async function loadAll(){ loadBoard(); loadCounsel(); loadChecks(); loadMusic(); }
+
+async function loadBoard(){
+  const rows = await api('dungji_board?order=created_at.desc&limit=100'); // 관리자: 원문 직접 조회 (비밀글 포함)
+  document.getElementById('board-stats').innerHTML =
+    `<span class="stat"><b>${rows.length}</b><span>총 게시글</span></span>
+     <span class="stat"><b>${rows.filter(r=>r.secret).length}</b><span>비밀글</span></span>
+     <span class="stat"><b>${rows.reduce((s,r)=>s+(r.warm||0),0)}</b><span>따뜻해요</span></span>`;
+  document.getElementById('board-list').innerHTML = rows.length ? rows.map(r => `
+    <div class="card">
+      <div class="meta"><span>#${r.id} · ${r.nick || '익명'} ${r.secret ? '· 🔒비밀글(운영자 열람)' : ''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
+      <div class="body">${esc(r.text)}</div>
+      <div style="font-size:12.5px;color:var(--sub);margin-top:8px">🧡 ${r.warm||0} · 💪 ${r.cheer||0}</div>
+      ${r.admin_reply ? `<div style="background:#fdf3e7;border-left:3px solid var(--sage);padding:8px 12px;margin-top:8px;border-radius:0 8px 8px 0;font-size:13.5px"><b>내 답글:</b> ${esc(r.admin_reply)}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+        <input id="reply-${r.id}" placeholder="답글 달기 (게시판에 표시됩니다)" value="${r.admin_reply ? esc(r.admin_reply) : ''}" style="flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap"><input type="checkbox" id="replysec-${r.id}" ${r.admin_reply_secret ? 'checked' : ''}> 비밀답변</label>
+        <button onclick="saveReply(${r.id})" style="padding:9px 16px;background:var(--sage);color:#fff;border:none;border-radius:9px;font-size:13.5px;cursor:pointer">답글 저장</button>
+        <button class="btn-del" onclick="delPost(${r.id})">삭제</button>
+      </div>
+    </div>`).join('') : '<div class="empty">게시글이 없어요</div>';
+}
+
+async function saveReply(id){
+  const txt = document.getElementById('reply-' + id).value.trim();
+  if(!txt){ alert('답글 내용을 입력해주세요'); return; }
+  const secret = document.getElementById('replysec-' + id).checked;
+  const r = await fetch(DB_URL + '/rest/v1/dungji_board?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({admin_reply: txt, admin_reply_secret: secret})
+  });
+  if(r.ok){ loadBoard(); } else { alert('답글 저장 실패'); }
+}
+
+/* ── 음악 관리 (v13) ── */
+async function loadMusic(){
+  const pl = await api('dungji_playlist?order=pos,id');
+  // 카테고리 그룹
+  const groups = {};
+  pl.forEach(x => { (groups[x.category || '기타'] = groups[x.category || '기타'] || []).push(x); });
+  const catOrder = ['위로가 되는 노래','따뜻한 발라드','잔잔한 피아노','힐링 팝','명상 음악','기타'];
+  document.getElementById('pl-list').innerHTML = pl.length ? catOrder.filter(c=>groups[c]).map(cat =>
+    `<div style="margin-bottom:18px;border:1.5px solid #eee2d0;border-radius:14px;padding:14px;background:#fffdfa">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <b style="font-size:14.5px;color:var(--sage-dark)">📁 ${cat} (${groups[cat].length}곡)</b>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input id="quick-${encodeURIComponent(cat)}" placeholder="이 장르에 곡 추가" style="padding:8px 12px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px;min-width:160px">
+          <button onclick="quickAdd('${cat}')" style="padding:8px 14px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold">＋ 추가</button>
+        </div>
+      </div>
+      <div style="margin-top:8px">` +
+    groups[cat].map(x => `
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;margin-top:8px;background:#fff">
+        <a href="https://music.youtube.com/search?q=${encodeURIComponent(x.search_q || x.title)}" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:none;font-weight:bold;font-size:14px">🎧 ${esc(x.title)} <span style="font-size:11px;color:var(--sage-dark)">▶ 미리듣기</span></a>
+        <button class="btn-del" onclick="delPlaylist(${x.id})">삭제</button>
+      </div>`).join('') + '</div></div>'
+  ).join('') + `
+  <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <b style="font-size:13px;color:var(--sub)">새 장르 섹션:</b>
+    <select id="new-cat-sel" style="padding:8px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px">
+      ${catOrder.filter(c=>!groups[c] && c!=='기타').map(c=>`<option>${c}</option>`).join('')}
+    </select>
+    <input id="new-cat-song" placeholder="곡 제목" style="padding:8px 12px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px">
+    <button onclick="quickAdd(document.getElementById('new-cat-sel').value)" style="padding:8px 14px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold">＋ 추가</button>
+  </div>` : `<div class="empty" style="padding:16px">아직 편성이 없어요 — 아래에서 장르별로 곡을 추가해보세요</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px">
+    <select id="new-cat-sel" style="padding:8px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px">
+      ${catOrder.filter(c=>c!=='기타').map(c=>`<option>${c}</option>`).join('')}
+    </select>
+    <input id="new-cat-song" placeholder="곡 제목" style="padding:8px 12px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px">
+    <button onclick="quickAdd(document.getElementById('new-cat-sel').value)" style="padding:8px 14px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold">＋ 추가</button>
+  </div>`;
+  // 신청곡 — YT검색 링크 포함
+  const songs = await api('dungji_songs?order=created_at.desc&limit=50');
+  document.getElementById('song-list').innerHTML = songs.length ? songs.map(x => `
+    <div class="card" style="padding:12px 16px">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <div>
+          <a href="https://music.youtube.com/search?q=${encodeURIComponent(x.title)}" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:none;font-weight:bold">🎶 ${esc(x.title)}</a>
+          <span style="font-size:11px;color:var(--sage-dark)"> ▶ 유튜브뮤직에서 듣기</span>
+          ${x.why ? `<div style="font-size:12.5px;color:var(--sub);margin-top:4px">— ${esc(x.why)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button onclick="acceptSong(${x.id}, '${esc(x.title).replace(/'/g, '')}')" style="padding:7px 12px;background:#e8f3e8;color:#5c7f60;border:1.5px solid #c8dfc8;border-radius:8px;font-size:12.5px;cursor:pointer">플레이리스트에 추가</button>
+          <button class="btn-del" onclick="delSong(${x.id})">삭제</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#9a8f80;margin-top:6px">${(x.created_at||'').slice(0,16).replace('T',' ')}</div>
+    </div>`).join('') : '<div class="empty" style="padding:16px">신청곡이 아직 없어요</div>';
+}
+
+async function quickAdd(cat){
+  const inp = document.getElementById('quick-' + encodeURIComponent(cat)) || document.getElementById('new-cat-song');
+  const title = inp ? inp.value.trim() : '';
+  if(!title){ alert('곡 제목을 입력해주세요'); return; }
+  const r = await fetch(DB_URL + '/rest/v1/dungji_playlist', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({title, search_q: title, category: cat})
+  });
+  if(r.ok){ loadMusic(); }
+}
+async function addPlaylist(){
+  const title = document.getElementById('pl-title').value.trim();
+  const search = document.getElementById('pl-search').value.trim() || title;
+  if(!title){ alert('곡 제목을 입력해주세요'); return; }
+  const r = await fetch(DB_URL + '/rest/v1/dungji_playlist', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({title, search_q: search, category: document.getElementById('pl-cat').value})
+  });
+  if(r.ok){ document.getElementById('pl-title').value=''; document.getElementById('pl-search').value=''; loadMusic(); }
+}
+async function acceptSong(id, title){
+  // 신청곡을 플레이리스트로 (선택된 카테고리에)
+  const cat = document.getElementById('pl-cat') ? document.getElementById('pl-cat').value : '위로가 되는 노래';
+  await fetch(DB_URL + '/rest/v1/dungji_playlist', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({title: title, search_q: title, category: cat})
+  });
+  await fetch(DB_URL + '/rest/v1/dungji_songs?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadMusic();
+}
+async function delPlaylist(id){
+  if(!confirm('플레이리스트에서 제거할까요?')) return;
+  await fetch(DB_URL + '/rest/v1/dungji_playlist?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadMusic();
+}
+async function delSong(id){
+  if(!confirm('신청곡을 삭제할까요?')) return;
+  await fetch(DB_URL + '/rest/v1/dungji_songs?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadMusic();
+}
+
+async function loadCounsel(){
+  const rows = await api('dungji_counsel?order=created_at.desc&limit=100');
+  document.getElementById('counsel-stats').innerHTML =
+    `<span class="stat"><b>${rows.length}</b><span>총 신청</span></span>
+     <span class="stat"><b>${rows.filter(r=>r.status==='new').length}</b><span>미확인</span></span>`;
+  document.getElementById('counsel-list').innerHTML = rows.length ? rows.map(r => `
+    <div class="card ${r.status==='new'?'risk':''}">
+      <div class="meta"><span>#${r.id} · ${r.nick||'익명'} ${r.status==='new'?'<span class="badge risk">NEW</span>':''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
+      <div class="body"><b>${esc(r.contact_method||'')}</b> ${esc(r.contact||'')} · 희망: ${esc(r.pref||'')}
+${r.message ? '\n📝 ' + esc(r.message) : ''}</div>
+      <div style="display:flex;gap:8px">
+        ${r.status==='new'?`<button class="btn-del" style="background:#e8f3e8;color:#5c7f60;border-color:#c8dfc8" onclick="markDone(${r.id})">확인 완료</button>`:''}
+        <button class="btn-del" onclick="delCounsel(${r.id})">삭제</button>
+      </div>
+    </div>`).join('') : '<div class="empty">상담 신청이 아직 없어요</div>';
+}
+
+const QLABELS = {
+  phq: ['기분 저하','흥미 상실','수면 문제','피로','식욕 문제','자기비난','집중력 저하','행동 변화','자살사고*'],
+  gad: ['긴장','걱정 조절 불가','과도한 걱정','이완 불가','안절부절','짜증','공포감'],
+  who: ['긍정 정서','평온','활력','상쾌한 아침','흥미']
+};
+async function loadChecks(){
+  const rows = await api('dungji_checks?order=created_at.desc&limit=200');
+  const phq = rows.filter(r=>r.test==='phq');
+  const high = rows.filter(r=>r.test==='phq' && r.score>=15);
+  const itemSum = {}; const itemCnt = {};
+  rows.forEach(r=>{
+    try{
+      const ans = r.answers;
+      if(Array.isArray(ans)){
+        ans.forEach((v,i)=>{
+          if(v==null) return;
+          itemSum[r.test+'_'+i] = (itemSum[r.test+'_'+i]||0) + v;
+          itemCnt[r.test+'_'+i] = (itemCnt[r.test+'_'+i]||0) + 1;
+        });
+      }
+    }catch(e){}
+  });
+  const avgHTML = phq.length ? '<div class="card"><b style="font-size:14px">📊 PHQ-9 문항별 평균 (높을수록 많이 호소)</b>' +
+    QLABELS.phq.map((lb,i)=>{
+      const key = 'phq_'+i;
+      const avg = itemCnt[key] ? (itemSum[key]/itemCnt[key]) : 0;
+      const pct = Math.min(100, avg/3*100);
+      const warn = i===8 && avg>0;
+      return `<div style="display:flex;align-items:center;gap:8px;margin:7px 0"><span style="font-size:12.5px;width:110px;${warn?'color:var(--red);font-weight:bold':''}">${lb}</span><div style="flex:1;background:var(--cream2);border-radius:6px;height:14px"><div style="width:${pct}%;height:100%;border-radius:6px;background:${warn?'var(--red)':'var(--sage)'}"></div></div><span style="font-size:12px;width:36px;text-align:right">${avg.toFixed(1)}</span></div>`;
+    }).join('') + '</div>' : '';
+  document.getElementById('checks-stats').innerHTML =
+    `<span class="stat"><b>${rows.length}</b><span>총 검사</span></span>
+     <span class="stat"><b>${phq.length}</b><span>PHQ-9</span></span>
+     <span class="stat"><b>${high.length}</b><span>⚠️ 고점수(15+)</span></span>`;
+  document.getElementById('checks-list').innerHTML =
+    (avgHTML || '') +
+    (rows.length ? rows.map(r => {
+    const isHigh = r.test==='phq' && r.score>=15;
+    const suicidal = r.test==='phq' && Array.isArray(r.answers) && r.answers[8]>0;
+    const ansChips = (Array.isArray(r.answers) && (QLABELS[r.test]||[]).length) ? (QLABELS[r.test]).map(function(lb, i){
+      const v = r.answers[i];
+      if(v == null || v <= 0) return '';
+      const danger = (r.test === 'phq' && i === 8);
+      const bg = danger ? '#fae8e4' : 'var(--cream2)';
+      const col = danger ? 'var(--red)' : 'inherit';
+      return '<span style="display:inline-block;margin:2px 4px;padding:2px 8px;border-radius:8px;background:' + bg + ';color:' + col + '">' + lb + ' ' + v + '</span>';
+    }).join('') : '';
+    const ansDetail = ansChips ? '<div style="margin-top:8px;font-size:12.5px;color:var(--sub)">' + ansChips + '</div>' : '';
+    return `<div class="card ${isHigh?'risk':''}">
+      <div class="meta"><span>${r.test.toUpperCase()} ${isHigh?'<span class="badge risk">고위험</span>':''}${suicidal?'<span class="badge risk">자살사고 문항 양성</span>':''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
+      <div class="body"><b style="font-size:18px;color:${isHigh?'var(--red)':'var(--sage-dark)'}">${r.score}점</b> — ${esc(r.level||'')}
+${r.nick ? '👤 ' + esc(r.nick) : ''}${r.age ? ' · ' + esc(r.age) : ''}${r.contact ? '📞 ' + esc(r.contact) : ''}</div>
+      ${ansDetail}
+      <button class="btn-del" onclick="delCheck(${r.id})">삭제</button>
+    </div>`;
+  }).join('') : '<div class="empty">아직 기록이 없어요</div>');
+}
+
+async function delPost(id){
+  if(!confirm(`게시글 #${id}를 삭제할까요?`)) return;
+  const r = await fetch(DB_URL + '/rest/v1/rpc/admin_delete_post', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({post_id: id, pw: ADMIN_PW})
+  });
+  if(await r.json() === true){ loadBoard(); } else { alert('삭제 실패'); }
+}
+
+async function delCounsel(id){
+  if(!confirm(`상담 신청 #${id}를 삭제할까요?`)) return;
+  await fetch(DB_URL + '/rest/v1/dungji_counsel?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadCounsel();
+}
+async function delCheck(id){
+  if(!confirm(`검사 기록 #${id}를 삭제할까요?`)) return;
+  await fetch(DB_URL + '/rest/v1/dungji_checks?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadChecks();
+}
+async function markDone(id){
+  const r = await fetch(DB_URL + '/rest/v1/dungji_counsel?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({status: 'done'})
+  });
+  if(r.ok){ loadCounsel(); }
+}
+
+function esc(t){ const d = document.createElement('div'); d.textContent = t||''; return d.innerHTML; }
+</script>
+</body>
+</html>
