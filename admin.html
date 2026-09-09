@@ -94,7 +94,7 @@ let ADMIN_PW = '';
 function doLogin(){
   const pw = document.getElementById('pw').value;
   // 검증: admin_delete RPC에 틀린 pw → false 반환. 테스트 delete(존재안하는 id)로 검증
-  fetch(DB_URL + '/rest/v1/rpc/admin_delete_post', {
+  fetch(DB_URL + '/rest/v1/rpc/admin_delete_post_dungji', {
     method: 'POST',
     headers: {...H, 'Content-Type': 'application/json'},
     body: JSON.stringify({post_id: -1, pw: pw})
@@ -341,7 +341,7 @@ ${r.nick ? '👤 ' + esc(r.nick) : ''}${r.age ? ' · ' + esc(r.age) : ''}${r.con
 
 async function delPost(id){
   if(!confirm(`게시글 #${id}를 삭제할까요?`)) return;
-  const r = await fetch(DB_URL + '/rest/v1/rpc/admin_delete_post', {
+  const r = await fetch(DB_URL + '/rest/v1/rpc/admin_delete_post_dungji', {
     method: 'POST',
     headers: {...H, 'Content-Type': 'application/json'},
     body: JSON.stringify({post_id: id, pw: ADMIN_PW})

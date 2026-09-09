@@ -414,8 +414,8 @@ async function sha256(str){
 }
 /* ── 게시판 백엔드 (v7) — Supabase 연동, 미설정 시 localStorage 폴백 ──
    활성화: 아래 두 줄에 형의 Supabase URL/anon키 입력 + supabase_setup.sql 실행 */
-const BOARD_DB_URL = '';
-const BOARD_DB_KEY = '';
+const BOARD_DB_URL = 'https://puuiviiiltxagoebruuq.supabase.co';
+const BOARD_DB_KEY = 'sb_publishable_qsHOcy9rnJxhR1jpcRcVFA_7WNMfzWI';
 const DB_ON = BOARD_DB_URL && BOARD_DB_KEY;
 async function dbSelect(){
   if(!DB_ON) return null;

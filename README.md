@@ -27,19 +27,27 @@
 
 ## 운영 (admin.html)
 
-비밀번호 게이트 + 게시글 관리(RPC 삭제) + 상담 신청함 + 마음체크 현황(⚠️고위험 하이라이트) + 플레이리스트 편성 + 신청곡 승인
+**🔗 운영툴: https://jycho7254-commits.github.io/silver-rest/admin.html**
+
+비밀번호 게이트(삭제 RPC 검증 방식 — 틀린 비밀번호는 서버에서 false) 후 사용:
+
+| 메뉴 | 기능 |
+|---|---|
+| 게시글 관리 | 전체 글 목록(비밀글 원문 포함 — 원본 테이블 직접 조회), 개별 삭제(RPC), 운영자 답글 달기 |
+| 상담 신청함 | NEW 배지, 확인 완료 처리 |
+| 마음체크 현황 | 닉네임/연령대/점수 목록, ⚠️고위험(15점+) 하이라이트 |
+| 음악 관리 | 플레이리스트 장르별 곡 추가/삭제, 신청곡 확인→승인(플레이리스트 이동) |
 
 ## 기술 스택
 
 - GitHub Pages 단일 `index.html` (의존성 0)
-- Supabase (신규 프로젝트 키 수령 대기 — 현재 localStorage 폴백 모드)
-- `supabase_setup.sql` — dungji_* 테이블/RLS/뷰 (마스킹 포함)
+- Supabase — 기존 프로젝트(puuiviiiltxagoebruuq)에 `dungji_*` 테이블로 격리 (어울림 eoullim_*와 공존, RLS 독립)
+- `supabase_setup.sql` — dungji_* 테이블/RLS/마스킹 뷰/삭제 RPC (전부 IF NOT EXISTS — 재실행 안전)
 
-## DB 활성화 절차 (키 수령 시)
+## DB 활성화 절차 (형이 SQL 실행)
 
-1. `index.html` / `admin.html`의 `BOARD_DB_URL`, `BOARD_DB_KEY` 2개 상수에 신규 프로젝트 값 입력
-2. Supabase Dashboard → SQL Editor → `supabase_setup.sql` 실행
-3. 게시판 2컨텍스트(익명 브라우저 2개) 저장→공유 확인
+1. Supabase Dashboard → SQL Editor → `supabase_setup.sql` 전체 붙여넣기 → Run (전부 IF NOT EXISTS라 안전)
+2. 완료 — 사이트/운영툴은 이미 같은 프로젝트 키로 연결됨 (`BOARD_DB_URL/KEY` = 어울림과 동일 프로젝트, 테이블 prefix로 격리)
 
 ## 검증
 

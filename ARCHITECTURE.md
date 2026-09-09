@@ -32,7 +32,7 @@
 | dungji_checks | 마음체크 기록(동의 시만) | insert만 |
 | dungji_counsel | 상담 신청 | insert만, 운영자 select |
 
-**현재 상태: localStorage 폴백 모드** (BOARD_DB_URL/KEY 빈값) — 신규 Supabase 프로젝트 키 수령 시 2상수 입력 + setup.sql 실행으로 전환.
+**DB 상태: 어울림과 동일 Supabase 프로젝트(puuiviiiltxagoebruuq) 사용 — 테이블 prefix(dungji_)로 완전 격리.** setup.sql 실행 즉시 활성화. 삭제 RPC: admin_delete_post_dungji (비번 dungji2026!op — RPC 내 검증).
 
 ## 어울림과의 차이 (같은 코드베이스, 다른 정체성)
 
